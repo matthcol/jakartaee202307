@@ -1,6 +1,7 @@
 package org.example.data.ut;
 
 import org.example.data.Movie;
+import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -25,7 +26,14 @@ class MovieValidationTest {
 
     @BeforeAll
     static void initValidator(){
-        var validatorFactory = Validation.buildDefaultValidatorFactory();
+        // Sol1. Default factory need EL dependency
+        // var validatorFactory = Validation.buildDefaultValidatorFactory();
+        // Sol2. To avoid that, configure provider with the following lines
+        var validatorFactory =
+                Validation.byDefaultProvider()
+                        .configure()
+                        .messageInterpolator(new ParameterMessageInterpolator())
+                        .buildValidatorFactory();
         validator = validatorFactory.getValidator();
     }
 
