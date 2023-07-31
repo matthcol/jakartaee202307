@@ -134,5 +134,48 @@ class PersonValidationTest extends AbstractValidationTest {
         assertEquals(email, violation.getInvalidValue(), "invalid value");
     }
 
-    // TODO: telephone tests
+    // telephone validation
+
+    @ParameterizedTest
+    @ValueSource(strings={
+            "+33 765 432 109",
+            "+33-765-432-109",
+            "+33-7-65-43-21-09",
+            "+33.765.432.109",
+            "+33.7.65.43.21.09",
+    })
+    @NullSource
+    void testPersonValidTelephone(String telephone){
+        var person = Person.builder()
+                .name("Alfred Hitchcock")
+                .telephone(telephone)
+                .build();
+        var violations = validator.validate(person);
+        System.out.println(violations);
+        assertTrue(violations.isEmpty(), "no violations");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings={
+            "",
+            "1",
+            "a",
+            "11111"
+    })
+    void testPersonInvalidTelephone(String telephone){
+        var person = Person.builder()
+                .name("Alfred Hitchcock")
+                .telephone(telephone)
+                .build();
+        var violations = validator.validate(person);
+        // System.out.println(violations);
+        var optEmailViolation = violations.stream()
+                .filter(v -> "{javax.validation.constraints.Pattern.message}".equals(v.getMessageTemplate())
+                        && "telephone".equals(v.getPropertyPath().toString()))
+                .findFirst();
+        assertTrue(optEmailViolation.isPresent(), "Pattern constraint violation on property telephone");
+        var violation = optEmailViolation.get();
+        assertEquals(telephone, violation.getInvalidValue(), "invalid value");
+    }
+
 }

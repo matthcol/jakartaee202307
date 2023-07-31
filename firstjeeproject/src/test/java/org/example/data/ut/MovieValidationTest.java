@@ -263,7 +263,7 @@ class MovieValidationTest extends AbstractValidationTest {
                 .duration2(duration)
                 .build();
         var violations = validator.validate(movie);
-        // System.out.println(violations);
+        System.out.println(violations);
         var optDurationRangeViolation = violations.stream()
                 .filter(v -> "{org.example.validation.constraints.Range.message}".equals(v.getMessageTemplate())
                         && "duration2".equals(v.getPropertyPath().toString()))

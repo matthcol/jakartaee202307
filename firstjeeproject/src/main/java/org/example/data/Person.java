@@ -5,7 +5,7 @@ import lombok.*;
 import javax.validation.constraints.*;
 import java.time.LocalDate;
 
-// TODO: add constraint validation + test
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -26,8 +26,7 @@ public class Person {
     private String email;
 
     // nullable, international format
-    @Pattern(regexp="^(\\+[1-9][0-9]*(\\([0-9]*\\)|-[0-9]*-))?[0]?[1-9][0-9\\- ]*$")
+    @Pattern(regexp="^\\+([0-9]( |-|\\.)?){6,14}[0-9]$")
     private String telephone;
-
 
 }

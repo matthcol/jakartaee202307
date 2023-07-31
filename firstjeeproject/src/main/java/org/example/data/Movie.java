@@ -21,7 +21,6 @@ public class Movie {
     @Min(1888)
     private int year;
 
-    // TODO: nullable, min 40, max 300
     @Min(40)
     @Max(300)
     private Integer duration;
@@ -29,9 +28,7 @@ public class Movie {
     @Range(min=40, max=300)
     private Integer duration2;
 
-    // TODO: not null, can be empty
     @NotNull
-    // @Size(min = 0)
     @Builder.Default
     private Set<String> genres = new TreeSet<>();
 
