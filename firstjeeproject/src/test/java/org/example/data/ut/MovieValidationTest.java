@@ -181,6 +181,8 @@ class MovieValidationTest extends AbstractValidationTest {
         assertTrue(violations.isEmpty(), "no violations");
     }
 
+    // duration with @Min, @Max constraints
+
     @ParameterizedTest
     @ValueSource(ints={
             0,
@@ -200,7 +202,7 @@ class MovieValidationTest extends AbstractValidationTest {
                 .findFirst();
         assertTrue(optDurationMinViolation.isPresent(), "Min violation on property duration");
         var violation = optDurationMinViolation.get();
-        assertEquals(movie.getDuration(), violation.getInvalidValue(), "invalid value");
+        assertEquals(duration, violation.getInvalidValue(), "invalid value");
     }
 
     @ParameterizedTest
@@ -223,7 +225,7 @@ class MovieValidationTest extends AbstractValidationTest {
                 .findFirst();
         assertTrue(optDurationMinViolation.isPresent(), "Max violation on property duration");
         var violation = optDurationMinViolation.get();
-        assertEquals(movie.getDuration(), violation.getInvalidValue(), "invalid value");
+        assertEquals(duration, violation.getInvalidValue(), "invalid value");
     }
 
     @ParameterizedTest
@@ -242,6 +244,53 @@ class MovieValidationTest extends AbstractValidationTest {
         var violations = validator.validate(movie);
         assertTrue(violations.isEmpty(), "no violations");
     }
+
+    // duration2 with @Range constraints
+
+    @ParameterizedTest
+    @ValueSource(ints={
+            0,
+            10,
+            39,
+            301,
+            1440,
+            Integer.MAX_VALUE,
+    })
+    void testMovieDuration2NotValidRange(Integer duration) {
+        var movie = Movie.builder()
+                .title("Talk to Me")
+                .year(2022)
+                .duration2(duration)
+                .build();
+        var violations = validator.validate(movie);
+        // System.out.println(violations);
+        var optDurationRangeViolation = violations.stream()
+                .filter(v -> "{org.example.validation.constraints.Range.message}".equals(v.getMessageTemplate())
+                        && "duration2".equals(v.getPropertyPath().toString()))
+                .findFirst();
+        assertTrue(optDurationRangeViolation.isPresent(), "Range violation on property duration");
+        var violation = optDurationRangeViolation.get();
+        assertEquals(duration, violation.getInvalidValue(), "invalid value");
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints={
+            40,
+            120,
+            300,
+    })
+    @NullSource
+    void testMovieDuration2Valid(Integer duration) {
+        var movie = Movie.builder()
+                .title("Talk to Me")
+                .year(2022)
+                .duration2(duration)
+                .build();
+        var violations = validator.validate(movie);
+        assertTrue(violations.isEmpty(), "no violations");
+    }
+
+    // genres validation
 
     @Test
     void testMovieGenresNotValidNull(){

@@ -47,7 +47,7 @@ class PersonValidationTest extends AbstractValidationTest {
                 .findFirst();
         assertTrue(optNameNotBlankViolation.isPresent(), "NotBlank constraint violation on property name");
         var violation = optNameNotBlankViolation.get();
-        assertEquals(person.getName(), violation.getInvalidValue(), "invalid value");
+        assertEquals(name, violation.getInvalidValue(), "invalid value");
     }
 
     static Stream<LocalDate> validBirthdates(){
@@ -91,7 +91,7 @@ class PersonValidationTest extends AbstractValidationTest {
                 .findFirst();
         assertTrue(optBirthdatePasOrPresentViolation.isPresent(), "Past or present constraint violation on property birthdate");
         var violation = optBirthdatePasOrPresentViolation.get();
-        assertEquals(person.getBirthdate(), violation.getInvalidValue(), "invalid value");
+        assertEquals(birthdate, violation.getInvalidValue(), "invalid value");
     }
 
     @ParameterizedTest
@@ -131,8 +131,8 @@ class PersonValidationTest extends AbstractValidationTest {
                 .findFirst();
         assertTrue(optEmailViolation.isPresent(), "Email constraint violation on property email");
         var violation = optEmailViolation.get();
-        assertEquals(person.getEmail(), violation.getInvalidValue(), "invalid value");
+        assertEquals(email, violation.getInvalidValue(), "invalid value");
     }
 
-
+    // TODO: telephone tests
 }
