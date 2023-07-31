@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
-public class AbstractValidationTest {
+public abstract class AbstractValidationTest {
     static Validator validator;
 
     @BeforeAll
