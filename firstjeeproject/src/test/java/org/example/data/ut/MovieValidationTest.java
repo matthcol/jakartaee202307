@@ -5,23 +5,26 @@ import org.example.data.Movie;
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class MovieValidationTest {
-
-    static Validator validator;
+class MovieValidationTest extends AbstractValidationTest {
     static Movie defaultMovie;
     static Movie movieTitleNull;
+
+    static Movie movieTitleBlankEmpty;
     static Movie movieTitleBlankSpace;
     static Movie movieTitleBlankTab;
     static Movie movieTitleBlankEol;
@@ -30,23 +33,15 @@ class MovieValidationTest {
     static Movie movieNotValidYearMedian;
     static Movie movieNotValidYearMax;
 
-    @BeforeAll
-    static void initValidator(){
-        // Sol1. Default factory need EL dependency
-        // var validatorFactory = Validation.buildDefaultValidatorFactory();
-        // Sol2. To avoid that, configure provider with the following lines
-        var validatorFactory =
-                Validation.byDefaultProvider()
-                        .configure()
-                        .messageInterpolator(new ParameterMessageInterpolator())
-                        .buildValidatorFactory();
-        validator = validatorFactory.getValidator();
-    }
 
     @BeforeAll
     static void initData() {
         defaultMovie = new Movie();
         movieTitleNull = Movie.builder()
+                .year(2023)
+                .build();
+        movieTitleBlankEmpty = Movie.builder()
+                .title("")
                 .year(2023)
                 .build();
         movieTitleBlankSpace = Movie.builder()
@@ -82,6 +77,7 @@ class MovieValidationTest {
         return Stream.of(
                 defaultMovie,
                 movieTitleNull,
+                movieTitleBlankEmpty,
                 movieTitleBlankSpace,
                 movieTitleBlankTab,
                 movieTitleBlankEol,
@@ -96,10 +92,20 @@ class MovieValidationTest {
         return Stream.of(
                 defaultMovie,
                 movieTitleNull,
+                movieTitleBlankEmpty,
                 movieTitleBlankSpace,
                 movieTitleBlankTab,
                 movieTitleBlankEol,
                 movieTitleBlanks
+        );
+    }
+
+    static Stream<Movie> moviesYearNotValid(){
+        return Stream.of(
+                defaultMovie,
+                movieDefaultYear,
+                movieNotValidYearMedian,
+                movieNotValidYearMax
         );
     }
 
@@ -144,7 +150,145 @@ class MovieValidationTest {
         assertTrue(violations.isEmpty(), "no violations");
     }
 
-    // TODO: invalidate movie with invalid year
-    // TODO: validate movie with valid year
+    @ParameterizedTest
+    @MethodSource("moviesYearNotValid")
+    void testMovieYearNotValid(Movie movieYearNotValid){
+        // Set<ConstraintViolation<Movie>>
+        var violations = validator.validate(movieYearNotValid);
+        // assert Not Valid
+        assertTrue(violations.size() > 0, "at least one constraint violation");
+        var optYearMinViolation = violations.stream()
+                .filter(v -> "{javax.validation.constraints.Min.message}".equals(v.getMessageTemplate())
+                        && "year".equals(v.getPropertyPath().toString()))
+                .findFirst();
+        assertTrue(optYearMinViolation.isPresent(), "Min violation on property year");
+        var violation = optYearMinViolation.get();
+        assertEquals(movieYearNotValid.getYear(), violation.getInvalidValue(), "invalid value");
+    }
 
+    @ParameterizedTest
+    @ValueSource(ints={
+            1888,
+            1923,
+            Integer.MAX_VALUE
+    })
+    void testMovieYearValid(int year) {
+        var movie = Movie.builder()
+                .title("Talk to Me")
+                .year(year)
+                .build();
+        var violations = validator.validate(movie);
+        assertTrue(violations.isEmpty(), "no violations");
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints={
+            0,
+            10,
+            39,
+    })
+    void testMovieDurationNotValidMin(Integer duration) {
+        var movie = Movie.builder()
+                .title("Talk to Me")
+                .year(2022)
+                .duration(duration)
+                .build();
+        var violations = validator.validate(movie);
+        var optDurationMinViolation = violations.stream()
+                .filter(v -> "{javax.validation.constraints.Min.message}".equals(v.getMessageTemplate())
+                        && "duration".equals(v.getPropertyPath().toString()))
+                .findFirst();
+        assertTrue(optDurationMinViolation.isPresent(), "Min violation on property duration");
+        var violation = optDurationMinViolation.get();
+        assertEquals(movie.getDuration(), violation.getInvalidValue(), "invalid value");
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints={
+            301,
+            1440,
+            Integer.MAX_VALUE,
+    })
+    void testMovieDurationNotValidMax(Integer duration) {
+        var movie = Movie.builder()
+                .title("Talk to Me")
+                .year(2022)
+                .duration(duration)
+                .build();
+        var violations = validator.validate(movie);
+        // System.out.println(violations);
+        var optDurationMinViolation = violations.stream()
+                .filter(v -> "{javax.validation.constraints.Max.message}".equals(v.getMessageTemplate())
+                        && "duration".equals(v.getPropertyPath().toString()))
+                .findFirst();
+        assertTrue(optDurationMinViolation.isPresent(), "Max violation on property duration");
+        var violation = optDurationMinViolation.get();
+        assertEquals(movie.getDuration(), violation.getInvalidValue(), "invalid value");
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints={
+            40,
+            120,
+            300,
+    })
+    @NullSource
+    void testMovieDurationValid(Integer duration) {
+        var movie = Movie.builder()
+                .title("Talk to Me")
+                .year(2022)
+                .duration(duration)
+                .build();
+        var violations = validator.validate(movie);
+        assertTrue(violations.isEmpty(), "no violations");
+    }
+
+    @Test
+    void testMovieGenresNotValidNull(){
+        var movie = Movie.builder()
+                .title("Talk to Me")
+                .year(2022)
+                .genres(null)
+                .build();
+        var violations = validator.validate(movie);
+        //  System.out.println(violations);
+        var optGenresNotNullViolation = violations.stream()
+                .filter(v -> "{javax.validation.constraints.NotNull.message}".equals(v.getMessageTemplate())
+                        && "genres".equals(v.getPropertyPath().toString()))
+                .findFirst();
+        assertTrue(optGenresNotNullViolation.isPresent(), "Not null violation on property genres");
+        var violation = optGenresNotNullViolation.get();
+        assertNull(violation.getInvalidValue(), "invalid null value");
+    }
+
+    static Stream<Movie> moviesGenresValid(){
+        return Stream.of(
+                Movie.builder() // default genres
+                        .title("Talk to Me")
+                        .year(2022)
+                        .build(),
+                Movie.builder() // explicit empty set
+                        .title("Talk to Me")
+                        .year(2022)
+                        .genres(Set.of())
+                        .build(),
+                Movie.builder()
+                        .title("Talk to Me")
+                        .year(2022)
+                        .genres(Set.of("Horror"))
+                        .build(),
+                Movie.builder()
+                        .title("Talk to Me")
+                        .year(2022)
+                        .genres(Set.of("Horror", "Thriller"))
+                        .build()
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("moviesGenresValid")
+    void testMovieGenresValid(Movie movie){
+        var violations = validator.validate(movie);
+        assertTrue(violations.isEmpty(), "no violations");
+    }
 }
