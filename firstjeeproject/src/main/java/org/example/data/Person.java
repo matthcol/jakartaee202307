@@ -1,6 +1,7 @@
 package org.example.data;
 
 import lombok.*;
+import org.example.validation.constraints.NotEmptyString;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
@@ -22,6 +23,7 @@ public class Person {
     private LocalDate birthdate;
 
     // nullable, email format
+    @NotEmptyString
     @Email
     private String email;
 

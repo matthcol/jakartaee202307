@@ -1,6 +1,8 @@
 package org.example.data.ut;
 
 import org.example.data.Person;
+import org.example.validation.constraints.NotEmptyString;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
@@ -111,7 +113,7 @@ class PersonValidationTest extends AbstractValidationTest {
 
     @ParameterizedTest
     @ValueSource(strings={
-            "",  // bug
+            // "",  // not handled buy Email constraint
             " ",
             "m",
             "spy.org",
@@ -131,6 +133,24 @@ class PersonValidationTest extends AbstractValidationTest {
                 .findFirst();
         assertTrue(optEmailViolation.isPresent(), "Email constraint violation on property email");
         var violation = optEmailViolation.get();
+        assertEquals(email, violation.getInvalidValue(), "invalid value");
+    }
+
+    @Test
+    void testPersonInvalidEmailEmptyString(){
+        String email = "";
+        var person = Person.builder()
+                .name("Alfred Hitchcock")
+                .email(email)
+                .build();
+        var violations = validator.validate(person);
+        System.out.println(violations);
+        var optNotEmptyStringViolation = violations.stream()
+                .filter(v -> (v.getConstraintDescriptor().getAnnotation().annotationType() == NotEmptyString.class)
+                        && "email".equals(v.getPropertyPath().toString()))
+                .findFirst();
+        assertTrue(optNotEmptyStringViolation.isPresent(), "NotEmptyString constraint violation on property email");
+        var violation = optNotEmptyStringViolation.get();
         assertEquals(email, violation.getInvalidValue(), "invalid value");
     }
 
