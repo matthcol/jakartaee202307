@@ -1,7 +1,9 @@
 package org.example.data.ut;
 
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.example.data.Movie;
 
 import org.example.validation.constraints.Range;
@@ -130,8 +132,7 @@ class MovieValidationTest extends AbstractValidationTest {
                 .title(title)
                 .year(2023)
                 .build();
-        var violations = validator.validate(movie);
-        assertTrue(violations.isEmpty(), "no violations");
+        assertValid(movie);
     }
 
     @ParameterizedTest
@@ -151,8 +152,7 @@ class MovieValidationTest extends AbstractValidationTest {
                 .title("Talk to Me")
                 .year(year)
                 .build();
-        var violations = validator.validate(movie);
-        assertTrue(violations.isEmpty(), "no violations");
+        assertValid(movie);
     }
 
     // duration with @Min, @Max constraints
@@ -184,15 +184,7 @@ class MovieValidationTest extends AbstractValidationTest {
                 .year(2022)
                 .duration(duration)
                 .build();
-        var violations = validator.validate(movie);
-        System.out.println(violations);
-        var optDurationMinViolation = violations.stream()
-                .filter(v -> "{javax.validation.constraints.Max.message}".equals(v.getMessageTemplate())
-                        && "duration".equals(v.getPropertyPath().toString()))
-                .findFirst();
-        assertTrue(optDurationMinViolation.isPresent(), "Max violation on property duration");
-        var violation = optDurationMinViolation.get();
-        assertEquals(duration, violation.getInvalidValue(), "invalid value");
+        assertConstraintViolated(movie, Max.class, "duration", duration);
     }
 
     @ParameterizedTest
@@ -208,8 +200,7 @@ class MovieValidationTest extends AbstractValidationTest {
                 .year(2022)
                 .duration(duration)
                 .build();
-        var violations = validator.validate(movie);
-        assertTrue(violations.isEmpty(), "no violations");
+        assertValid(movie);
     }
 
     // duration2 with @Range constraints
@@ -229,23 +220,7 @@ class MovieValidationTest extends AbstractValidationTest {
                 .year(2022)
                 .duration2(duration)
                 .build();
-        var violations = validator.validate(movie);
-        System.out.println(violations);
-        var optDurationRangeViolation = violations.stream()
-                .filter(v -> (v.getConstraintDescriptor().getAnnotation().annotationType() == Range.class)
-                        && "duration2".equals(v.getPropertyPath().toString()))
-                .findFirst();
-
-        assertTrue(optDurationRangeViolation.isPresent(), "Range violation on property duration");
-        var violation = optDurationRangeViolation.get();
-        //        System.out.println("Message: " + violation.getMessage());
-        //        System.out.println("Message template: " + violation.getMessageTemplate());
-        //        System.out.println("Property Path: " + violation.getPropertyPath());
-        //        System.out.println("Invalid value: " + violation.getInvalidValue());
-        //        System.out.println("Constraint annotation: " +violation.getConstraintDescriptor().getAnnotation());
-        //        System.out.println("Constraint annotation type: "
-        //                + violation.getConstraintDescriptor().getAnnotation().annotationType());
-        assertEquals(duration, violation.getInvalidValue(), "invalid value");
+        assertConstraintViolated(movie, Range.class, "duration2", duration);
     }
 
     @ParameterizedTest
@@ -261,8 +236,7 @@ class MovieValidationTest extends AbstractValidationTest {
                 .year(2022)
                 .duration2(duration)
                 .build();
-        var violations = validator.validate(movie);
-        assertTrue(violations.isEmpty(), "no violations");
+        assertValid(movie);
     }
 
     // genres validation
@@ -274,15 +248,7 @@ class MovieValidationTest extends AbstractValidationTest {
                 .year(2022)
                 .genres(null)
                 .build();
-        var violations = validator.validate(movie);
-        //  System.out.println(violations);
-        var optGenresNotNullViolation = violations.stream()
-                .filter(v -> "{javax.validation.constraints.NotNull.message}".equals(v.getMessageTemplate())
-                        && "genres".equals(v.getPropertyPath().toString()))
-                .findFirst();
-        assertTrue(optGenresNotNullViolation.isPresent(), "Not null violation on property genres");
-        var violation = optGenresNotNullViolation.get();
-        assertNull(violation.getInvalidValue(), "invalid null value");
+        assertConstraintViolated(movie, NotNull.class, "genres", null);
     }
 
     static Stream<Movie> moviesGenresValid(){
@@ -312,7 +278,6 @@ class MovieValidationTest extends AbstractValidationTest {
     @ParameterizedTest
     @MethodSource("moviesGenresValid")
     void testMovieGenresValid(Movie movie){
-        var violations = validator.validate(movie);
-        assertTrue(violations.isEmpty(), "no violations");
+        assertValid(movie);
     }
 }

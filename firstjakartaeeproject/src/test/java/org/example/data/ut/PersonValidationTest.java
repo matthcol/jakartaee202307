@@ -1,5 +1,9 @@
 package org.example.data.ut;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Pattern;
 import org.example.data.Person;
 import org.example.validation.constraints.NotEmptyString;
 import org.junit.jupiter.api.Test;
@@ -24,8 +28,7 @@ class PersonValidationTest extends AbstractValidationTest {
         var person = Person.builder()
                 .name(name)
                 .build();
-        var violations = validator.validate(person);
-        assertTrue(violations.isEmpty(), "no violations");
+        assertValid(person);
     }
 
     @ParameterizedTest
@@ -42,14 +45,7 @@ class PersonValidationTest extends AbstractValidationTest {
         var person = Person.builder()
                 .name(name)
                 .build();
-        var violations = validator.validate(person);
-        var optNameNotBlankViolation = violations.stream()
-                .filter(v -> "{javax.validation.constraints.NotBlank.message}".equals(v.getMessageTemplate())
-                        && "name".equals(v.getPropertyPath().toString()))
-                .findFirst();
-        assertTrue(optNameNotBlankViolation.isPresent(), "NotBlank constraint violation on property name");
-        var violation = optNameNotBlankViolation.get();
-        assertEquals(name, violation.getInvalidValue(), "invalid value");
+        assertConstraintViolated(person, NotBlank.class, "name", name);
     }
 
     static Stream<LocalDate> validBirthdates(){
@@ -68,8 +64,7 @@ class PersonValidationTest extends AbstractValidationTest {
                 .name("Alfred Hitchcock")
                 .birthdate(birthdate)
                 .build();
-        var violations = validator.validate(person);
-        assertTrue(violations.isEmpty(), "no violations");
+        assertValid(person);
     }
 
     static Stream<LocalDate> invalidBirthdates(){
@@ -86,14 +81,7 @@ class PersonValidationTest extends AbstractValidationTest {
                 .name("Alfred Hitchcock")
                 .birthdate(birthdate)
                 .build();
-        var violations = validator.validate(person);
-        var optBirthdatePasOrPresentViolation = violations.stream()
-                .filter(v -> "{javax.validation.constraints.PastOrPresent.message}".equals(v.getMessageTemplate())
-                        && "birthdate".equals(v.getPropertyPath().toString()))
-                .findFirst();
-        assertTrue(optBirthdatePasOrPresentViolation.isPresent(), "Past or present constraint violation on property birthdate");
-        var violation = optBirthdatePasOrPresentViolation.get();
-        assertEquals(birthdate, violation.getInvalidValue(), "invalid value");
+        assertConstraintViolated(person, PastOrPresent.class, "birthdate", birthdate);
     }
 
     @ParameterizedTest
@@ -107,8 +95,7 @@ class PersonValidationTest extends AbstractValidationTest {
                 .name("Alfred Hitchcock")
                 .email(email)
                 .build();
-        var violations = validator.validate(person);
-        assertTrue(violations.isEmpty(), "no violations");
+        assertValid(person);
     }
 
     @ParameterizedTest
@@ -125,15 +112,7 @@ class PersonValidationTest extends AbstractValidationTest {
                 .name("Alfred Hitchcock")
                 .email(email)
                 .build();
-        var violations = validator.validate(person);
-        System.out.println(violations);
-        var optEmailViolation = violations.stream()
-                .filter(v -> "{javax.validation.constraints.Email.message}".equals(v.getMessageTemplate())
-                        && "email".equals(v.getPropertyPath().toString()))
-                .findFirst();
-        assertTrue(optEmailViolation.isPresent(), "Email constraint violation on property email");
-        var violation = optEmailViolation.get();
-        assertEquals(email, violation.getInvalidValue(), "invalid value");
+        assertConstraintViolated(person, Email.class, "email", email);
     }
 
     @Test
@@ -143,15 +122,7 @@ class PersonValidationTest extends AbstractValidationTest {
                 .name("Alfred Hitchcock")
                 .email(email)
                 .build();
-        var violations = validator.validate(person);
-        System.out.println(violations);
-        var optNotEmptyStringViolation = violations.stream()
-                .filter(v -> (v.getConstraintDescriptor().getAnnotation().annotationType() == NotEmptyString.class)
-                        && "email".equals(v.getPropertyPath().toString()))
-                .findFirst();
-        assertTrue(optNotEmptyStringViolation.isPresent(), "NotEmptyString constraint violation on property email");
-        var violation = optNotEmptyStringViolation.get();
-        assertEquals(email, violation.getInvalidValue(), "invalid value");
+        assertConstraintViolated(person, NotEmptyString.class, "email", email);
     }
 
     // telephone validation
@@ -170,9 +141,7 @@ class PersonValidationTest extends AbstractValidationTest {
                 .name("Alfred Hitchcock")
                 .telephone(telephone)
                 .build();
-        var violations = validator.validate(person);
-        System.out.println(violations);
-        assertTrue(violations.isEmpty(), "no violations");
+        assertValid(person);
     }
 
     @ParameterizedTest
@@ -187,15 +156,7 @@ class PersonValidationTest extends AbstractValidationTest {
                 .name("Alfred Hitchcock")
                 .telephone(telephone)
                 .build();
-        var violations = validator.validate(person);
-        // System.out.println(violations);
-        var optEmailViolation = violations.stream()
-                .filter(v -> "{javax.validation.constraints.Pattern.message}".equals(v.getMessageTemplate())
-                        && "telephone".equals(v.getPropertyPath().toString()))
-                .findFirst();
-        assertTrue(optEmailViolation.isPresent(), "Pattern constraint violation on property telephone");
-        var violation = optEmailViolation.get();
-        assertEquals(telephone, violation.getInvalidValue(), "invalid value");
+        assertConstraintViolated(person, Pattern.class, "telephone", telephone);
     }
 
 }
