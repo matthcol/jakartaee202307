@@ -13,4 +13,5 @@ public class NotEmptyStringValidator
     public boolean isValid(String value, ConstraintValidatorContext context) {
         return Objects.isNull(value) || !value.isEmpty();
     }
+    
 }
