@@ -2,6 +2,7 @@ package org.example.data.ut;
 
 import org.example.data.Movie;
 
+import org.example.validation.constraints.Range;
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -218,7 +219,7 @@ class MovieValidationTest extends AbstractValidationTest {
                 .duration(duration)
                 .build();
         var violations = validator.validate(movie);
-        // System.out.println(violations);
+        System.out.println(violations);
         var optDurationMinViolation = violations.stream()
                 .filter(v -> "{javax.validation.constraints.Max.message}".equals(v.getMessageTemplate())
                         && "duration".equals(v.getPropertyPath().toString()))
@@ -265,11 +266,19 @@ class MovieValidationTest extends AbstractValidationTest {
         var violations = validator.validate(movie);
         System.out.println(violations);
         var optDurationRangeViolation = violations.stream()
-                .filter(v -> "{org.example.validation.constraints.Range.message}".equals(v.getMessageTemplate())
+                .filter(v -> (v.getConstraintDescriptor().getAnnotation().annotationType() == Range.class)
                         && "duration2".equals(v.getPropertyPath().toString()))
                 .findFirst();
+
         assertTrue(optDurationRangeViolation.isPresent(), "Range violation on property duration");
         var violation = optDurationRangeViolation.get();
+        //        System.out.println("Message: " + violation.getMessage());
+        //        System.out.println("Message template: " + violation.getMessageTemplate());
+        //        System.out.println("Property Path: " + violation.getPropertyPath());
+        //        System.out.println("Invalid value: " + violation.getInvalidValue());
+        //        System.out.println("Constraint annotation: " +violation.getConstraintDescriptor().getAnnotation());
+        //        System.out.println("Constraint annotation type: "
+        //                + violation.getConstraintDescriptor().getAnnotation().annotationType());
         assertEquals(duration, violation.getInvalidValue(), "invalid value");
     }
 

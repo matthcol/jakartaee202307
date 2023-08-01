@@ -37,7 +37,9 @@ public @interface Range {
     @OverridesAttribute(constraint = Max.class, name = "value")
     long max() default Long.MAX_VALUE;
 
-    String message() default "{org.example.validation.constraints.Range.message}";
+    // String message() default "{org.example.validation.constraints.Range.message}"; // need a specific interpolator
+    String message() default "must be in range [{min}-{max}]"; // ok with default interpolator
+    // String message() default "${validatedValue} must be in range [{min}-{max}]"; // ok with EL
 
     Class<?>[] groups() default { };
 
