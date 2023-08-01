@@ -1,5 +1,7 @@
 package org.example.data.ut;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import org.example.data.Movie;
 
 import org.example.validation.constraints.Range;
@@ -114,22 +116,7 @@ class MovieValidationTest extends AbstractValidationTest {
     @ParameterizedTest
     @MethodSource("moviesTitleNotValid")
     void testMovieTitleNotValid(Movie movieTitleNotValid){
-        // Set<ConstraintViolation<Movie>>
-        var violations = validator.validate(movieTitleNotValid);
-        // assert Not Valid
-        System.out.println(violations);
-        assertTrue(violations.size() > 0, "at least one constraint violation");
-        var optTitleNotBlankViolation = violations.stream()
-                .filter(v -> "{jakarta.validation.constraints.NotBlank.message}".equals(v.getMessageTemplate())
-                        && "title".equals(v.getPropertyPath().toString()))
-                .findFirst();
-        assertTrue(optTitleNotBlankViolation.isPresent(), "NotBlank constraint violation on property title");
-        var violation = optTitleNotBlankViolation.get();
-        //        System.out.println("Message: " + violation.getMessage());
-        //        System.out.println("Message template: " + violation.getMessageTemplate());
-        //        System.out.println("Property Path: " + violation.getPropertyPath());
-        //        System.out.println("Invalid value: " + violation.getInvalidValue());
-        assertEquals(movieTitleNotValid.getTitle(), violation.getInvalidValue(), "invalid value");
+        assertConstraintViolated(movieTitleNotValid, NotBlank.class, "title", movieTitleNotValid.getTitle());
     }
 
     @ParameterizedTest
@@ -150,17 +137,7 @@ class MovieValidationTest extends AbstractValidationTest {
     @ParameterizedTest
     @MethodSource("moviesYearNotValid")
     void testMovieYearNotValid(Movie movieYearNotValid){
-        // Set<ConstraintViolation<Movie>>
-        var violations = validator.validate(movieYearNotValid);
-        // assert Not Valid
-        assertTrue(violations.size() > 0, "at least one constraint violation");
-        var optYearMinViolation = violations.stream()
-                .filter(v -> "{javax.validation.constraints.Min.message}".equals(v.getMessageTemplate())
-                        && "year".equals(v.getPropertyPath().toString()))
-                .findFirst();
-        assertTrue(optYearMinViolation.isPresent(), "Min violation on property year");
-        var violation = optYearMinViolation.get();
-        assertEquals(movieYearNotValid.getYear(), violation.getInvalidValue(), "invalid value");
+        assertConstraintViolated(movieYearNotValid, Min.class, "year", movieYearNotValid.getYear());
     }
 
     @ParameterizedTest
@@ -192,14 +169,7 @@ class MovieValidationTest extends AbstractValidationTest {
                 .year(2022)
                 .duration(duration)
                 .build();
-        var violations = validator.validate(movie);
-        var optDurationMinViolation = violations.stream()
-                .filter(v -> "{javax.validation.constraints.Min.message}".equals(v.getMessageTemplate())
-                        && "duration".equals(v.getPropertyPath().toString()))
-                .findFirst();
-        assertTrue(optDurationMinViolation.isPresent(), "Min violation on property duration");
-        var violation = optDurationMinViolation.get();
-        assertEquals(duration, violation.getInvalidValue(), "invalid value");
+        assertConstraintViolated(movie, Min.class, "duration", duration);
     }
 
     @ParameterizedTest
