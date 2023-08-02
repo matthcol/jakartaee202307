@@ -5,8 +5,6 @@ import org.mariadb.jdbc.MariaDbDataSource;
 
 import javax.sql.DataSource;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class JDBCDemo {
 
 	@Test
