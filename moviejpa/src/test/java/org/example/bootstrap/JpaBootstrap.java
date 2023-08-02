@@ -52,4 +52,10 @@ public class JpaBootstrap {
         return createSessionFactory().createEntityManager();
     }
 
+    public static void closeEntityManager(EntityManager entityManager) {
+        var sessionFactory = entityManager.getEntityManagerFactory().unwrap(SessionFactory.class);
+        entityManager.close();
+        sessionFactory.close();
+    }
+
 }

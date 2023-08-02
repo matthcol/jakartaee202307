@@ -19,7 +19,8 @@ class MovieCrudDemo {
 
     @AfterAll
     static void shutdownJpa() {
-        entityManager.close();
+        //        entityManager.close();
+        JpaBootstrap.closeEntityManager(entityManager);
     }
 
     @Test
