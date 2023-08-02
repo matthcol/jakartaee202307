@@ -36,7 +36,8 @@ class MovieCrudDemo {
         entityManager.getTransaction().begin();
         entityManager.persist(movie); // INSERT here or later
         entityManager.flush();
-        System.out.println(movie);
+        System.out.println(movie);  // id has been provided
+        assertNotNull(movie.getId());
         entityManager.getTransaction().commit();
     }
 
@@ -45,6 +46,20 @@ class MovieCrudDemo {
     void demoReadById() {
         System.out.println();
         System.out.println("*** Demo Read by id with Hibernate ***");
+        // movie is null if not found
+        Movie movie = entityManager.find(Movie.class, 1);
+        // NB: Spring => Optional<Movie>
+        Optional<Movie> optMovie = Optional.ofNullable(movie);
+        System.out.println(optMovie);
+    }
+
+    @Test
+    @Order(3)
+    void demoReadByIdEmptyCache() {
+        System.out.println();
+        System.out.println("*** Demo Read by id with empty cache with Hibernate ***");
+        // empty hibernate/JPA cache
+        entityManager.clear();
         // movie is null if not found
         Movie movie = entityManager.find(Movie.class, 1);
         // NB: Spring => Optional<Movie>
