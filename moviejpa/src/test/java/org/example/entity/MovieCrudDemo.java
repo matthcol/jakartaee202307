@@ -113,6 +113,7 @@ class MovieCrudDemo {
             entityManager.flush();
             entityManager.getTransaction().commit();
         });
+        entityManager.getTransaction().rollback();
     }
 
 }
