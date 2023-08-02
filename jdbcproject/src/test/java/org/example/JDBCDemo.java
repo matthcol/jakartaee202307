@@ -5,11 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.mariadb.jdbc.MariaDbDataSource;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.MessageFormat;
+import java.util.List;
 
 class JDBCDemo {
 
@@ -42,11 +40,47 @@ class JDBCDemo {
                 int id = resultSet.getInt("id");
                 String title = resultSet.getString("title");
                 short year = resultSet.getShort("year");
+                // TODO: var movie = Movie.builder()
+                //      .id(id)
+                //      .title(title)
+                //      .year(year)
+                //      .build();
+                //  + add to a collection result
                 System.out.println(MessageFormat.format("{0} # {1} ({2})",
                         id, title, year));
             }
         } // Auto: resultSet.close(); statement.close(); connection.close()
+    }
 
+    @Test
+    void demoReadWithParameter() throws SQLException {
+        String query = "select id, title, year from movies where year = ?";
+        try (
+                Connection connection = dataSource.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query);
+        ) {
+            var years = List.of((short) 1982, (short) 1984, (short) 1992);
+            for (short yearQuery : years) {
+                System.out.println(MessageFormat.format("*** Movies of year: {0} ***", yearQuery));
+                statement.setShort(1, yearQuery);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        int id = resultSet.getInt("id");
+                        String title = resultSet.getString("title");
+                        short year = resultSet.getShort("year");
+                        // TODO: var movie = Movie.builder()
+                        //      .id(id)
+                        //      .title(title)
+                        //      .year(year)
+                        //      .build();
+                        //  + add to a collection result
+                        System.out.println(MessageFormat.format("{0} # {1} ({2})",
+                                id, title, year));
+                    }
+                } // // Auto: resultSet.close();
+                System.out.println();
+            }
+        } // Auto: statement.close(); connection.close()
     }
 
 }
