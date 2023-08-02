@@ -1,10 +1,12 @@
 package org.example.entity;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceException;
 import org.example.bootstrap.JpaBootstrap;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,6 +67,52 @@ class MovieCrudDemo {
         // NB: Spring => Optional<Movie>
         Optional<Movie> optMovie = Optional.ofNullable(movie);
         System.out.println(optMovie);
+    }
+
+    @Test
+    @Order(4)
+    void demoSaveSeveral(){
+        System.out.println();
+        System.out.println("*** Demo Save several movies with Hibernate ***");
+        var movies = List.of(
+                Movie.builder()
+                        .title("The Batman")
+                        .year((short) 2022)
+                        .build(),
+                Movie.builder()
+                        .title("Barbie")
+                        .year((short) 2023)
+                        .duration((short) 114)
+                        .build(),
+                Movie.builder()
+                        .title("Talk to Me")
+                        .year((short) 2022)
+                        .duration((short) 95)
+                        .build()
+        );
+        entityManager.getTransaction().begin();
+        movies.forEach(entityManager::persist);
+        entityManager.flush();
+        entityManager.getTransaction().commit();
+        // check all movies have an id
+        movies.forEach(System.out::println);
+        assertAll(movies.stream()
+                .map(movie -> () -> assertNotNull(movie.getId()))
+        );
+    }
+
+    @Test
+    @Order(5)
+    void testMovieTitleMandatory() {
+        var movie = Movie.builder()
+                .year((short) 2023)
+                .build();
+        assertThrows(PersistenceException.class, () -> {
+            entityManager.getTransaction().begin();
+            entityManager.persist(movie);
+            entityManager.flush();
+            entityManager.getTransaction().commit();
+        });
     }
 
 }
