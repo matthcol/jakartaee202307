@@ -1,5 +1,7 @@
 package org.example.entity;
 
+import jakarta.persistence.EntityManager;
+import org.example.bootstrap.JpaBootstrap;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
