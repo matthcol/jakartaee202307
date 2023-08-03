@@ -153,7 +153,9 @@ class MovieCrudDemo {
 
     @RepeatedTest(3)
     @Order(7)
-    void demoSaveMovieUniqueTitleYearKO(){
+    void testSaveMovieUniqueTitleYearKO(){
+        System.out.println();
+        System.out.println("*** Demo/Test Unique Title Year KO (with Hibernate) ***");
         var movie1 =  Movie.builder()
                 .title("Star Wars IV - A New Hope")
                 .year((short) 1977)
@@ -178,6 +180,20 @@ class MovieCrudDemo {
             System.out.println("Movie saved: " + movie2);
         });
         entityManager.getTransaction().rollback();
+    }
+
+    @Test
+    @Order(8)
+    void demoUpdate() {
+        System.out.println();
+        System.out.println("*** Demo Update Movie (with Hibernate) ***");
+        entityManager.getTransaction().begin();
+        var optMovie = Optional.ofNullable(entityManager.find(Movie.class, 1));
+        assertTrue(optMovie.isPresent());
+        var movie = optMovie.get();
+        movie.setDuration((short) 123);
+        // entityManager.flush();
+        entityManager.getTransaction().commit(); // SQL: update movies ... where id = 1
     }
 
 }
