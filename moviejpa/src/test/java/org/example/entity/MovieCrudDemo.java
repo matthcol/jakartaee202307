@@ -1,6 +1,8 @@
 package org.example.entity;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 import jakarta.persistence.PersistenceException;
 import org.example.bootstrap.JpaBootstrap;
 import org.junit.jupiter.api.*;
@@ -15,16 +17,25 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(OrderAnnotation.class)
 class MovieCrudDemo {
 
+    static EntityManagerFactory entityManagerFactory;
     static EntityManager entityManager;
 
     @BeforeAll
     static void bootstrapJpa() {
-        entityManager = JpaBootstrap.createEntityManager();
+        // Sol1. Bootstrap with Java code
+        // entityManager = JpaBootstrap.createEntityManager();
+        // Sol2. Bootstrap with PersistenceUnit defined in persistence.xml
+        entityManagerFactory = Persistence.createEntityManagerFactory("DBH2");
+        entityManager = entityManagerFactory.createEntityManager();
     }
 
     @AfterAll
     static void shutdownJpa() {
-        JpaBootstrap.closeEntityManager(entityManager);
+        // Sol1. Bootstrap with Java code
+        // JpaBootstrap.closeEntityManager(entityManager);
+        // Sol2. Bootstrap with PersistenceUnit defined in persistence.xml
+        entityManager.close();
+        entityManagerFactory.close();
     }
 
     @Test
