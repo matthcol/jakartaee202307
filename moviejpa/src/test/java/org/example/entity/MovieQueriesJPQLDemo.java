@@ -293,6 +293,32 @@ public class MovieQueriesJPQLDemo {
         });
     }
 
+    @ParameterizedTest
+    @ValueSource(shorts={1984})
+    void demoFindMovieTitleUpperCaseDurationHourMinute(short year){
+        String queryJPQL = """
+                SELECT
+                    UPPER(m.title) as title,
+                    CAST(duration / 60 AS int) as hour,
+                    MOD(duration, 60) as minute
+                FROM
+                    Movie m
+                WHERE
+                    m.year = :year
+                ORDER BY
+                    title
+                """;
+        entityManager.createQuery(queryJPQL, Tuple.class)
+                .setParameter("year", year)
+                .getResultStream()
+                .forEach(tuple -> System.out.println(MessageFormat.format(
+                        "\t- title = {0} ; hour = {1}; minute = {2}",
+                        tuple.get("title", String.class),
+                        tuple.get("hour", int.class),
+                        tuple.get("minute", int.class)
+                )));
+    }
+
 
 
 }
