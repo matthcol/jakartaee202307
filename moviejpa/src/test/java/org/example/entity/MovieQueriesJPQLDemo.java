@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.text.MessageFormat;
 
@@ -90,8 +91,77 @@ public class MovieQueriesJPQLDemo {
     }
 
     // EXo: movies with year between year1 and year2 sorted by year, title
+    @ParameterizedTest
+    @CsvSource({
+            "1980,1989",
+            "2020,2029"
+    })
+    void getMoviesBetweenYears(short year1, short year2) {
+        String queryJPQL = """
+                        SELECT
+                            m
+                        FROM
+                            Movie m
+                        WHERE
+                            m.year BETWEEN :year1 AND :year2
+                        ORDER BY
+                            m.year, m.title
+                """;
+
+        System.out.println(MessageFormat.format(" - Find movies between years {0} and {1} -",
+                year1, year2));
+        entityManager.createQuery(queryJPQL, Movie.class)
+                .setParameter("year1", year1)
+                .setParameter("year2", year2)
+                .getResultStream() // execute SQL query
+                .forEach(System.out::println);
+    }
 
     // Exo: movies with no duration sorted by title
+
+    @Test
+    void getMoviesWithNoDurationSortedByTitle() {
+        // NB: predicate IS NULL, IS NOT NULL
+        String queryJPQL = """
+                SELECT
+                    m
+                FROM
+                    Movie m
+                WHERE
+                    m.duration IS NULL
+                ORDER BY
+                    m.title
+        """;
+
+        System.out.println(" - Find movies with no duration -");
+        entityManager.createQuery(queryJPQL, Movie.class)
+                .getResultStream() // execute SQL query
+                .forEach(System.out::println);
+    }
+
+    // Exo: movies with title length > 100
+    @ParameterizedTest
+    @ValueSource(ints={300, 200, 100, 50})
+    void demoFindMoviesWithTitleLengthGreaterOrEquals(int lengthMin){
+        String queryJPQL = """
+                SELECT
+                    m
+                FROM 
+                    Movie m
+                WHERE
+                    LENGTH(m.title) >= :lengthMin
+                ORDER BY
+                    LENGTH(m.title) DESC
+                """;
+        System.out.println(MessageFormat.format(
+                " - Find movies with title length >= {0} -",
+                lengthMin
+        ));
+        entityManager.createQuery(queryJPQL, Movie.class)
+                .setParameter("lengthMin", lengthMin)
+                .getResultStream()
+                .forEach(System.out::println);
+    }
 
     // Exo: movies from last 10 years sorted by year desc, title asc
 
