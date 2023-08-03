@@ -164,7 +164,28 @@ public class MovieQueriesJPQLDemo {
     }
 
     // Exo: movies from last 10 years sorted by year desc, title asc
-
+    @Test
+    void demoFindMoviesFromLast10Years(){
+        short countYear = 10;
+        String queryJPQL = """
+               SELECT
+                    m
+               FROM 
+                    Movie m
+               WHERE
+                    m.year > EXTRACT(YEAR FROM CURRENT_DATE) - :countYear
+               ORDER BY
+                    m.year DESC, m.title 
+                """;
+        System.out.println(MessageFormat.format(
+                " - Find movies from {0} last years -",
+                countYear
+        ));
+        entityManager.createQuery(queryJPQL, Movie.class)
+                .setParameter("countYear", countYear)
+                .getResultStream()
+                .forEach(System.out::println);
+    }
 
 
 
