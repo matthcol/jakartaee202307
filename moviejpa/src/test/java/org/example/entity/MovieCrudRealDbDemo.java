@@ -43,5 +43,20 @@ public class MovieCrudRealDbDemo {
         entityManager.getTransaction().commit();
     }
 
+    @Test
+    @Order(2)
+    void demoRemoveMovie() {
+        String queryJPQL = "SELECT m FROM Movie m where title like 'The Covenant' and year = 2023";
+        entityManager.clear();
+        entityManager.getTransaction().begin();
+
+        entityManager.createQuery(queryJPQL, Movie.class)
+                .getResultStream()
+                .peek(System.out::println)
+                .forEach(entityManager::remove);
+
+        entityManager.getTransaction().commit();
+    }
+
 
 }
