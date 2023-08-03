@@ -103,7 +103,7 @@ class MovieCrudDemo {
 
     @Test
     @Order(5)
-    void testMovieTitleMandatory() {
+    void testSaveMovieTitleMandatoryKO() {
         System.out.println();
         System.out.println("*** Demo Error Save movie without title (with Hibernate) ***");
         var movie = Movie.builder()
@@ -149,6 +149,35 @@ class MovieCrudDemo {
         var moviesFromDb = entityManager.createQuery("FROM Movie", Movie.class)
                 .getResultList();
         System.out.println(moviesFromDb);
+    }
+
+    @RepeatedTest(3)
+    @Order(7)
+    void demoSaveMovieUniqueTitleYearKO(){
+        var movie1 =  Movie.builder()
+                .title("Star Wars IV - A New Hope")
+                .year((short) 1977)
+                .build();
+        var movie2 = Movie.builder()
+                .title("Star Wars IV - A New Hope")
+                .year((short) 1977)
+                .duration((short) 121)
+                .build();
+        entityManager.getTransaction().begin();
+        // insert movie (first version)
+        assertDoesNotThrow(() -> {
+            entityManager.persist(movie1);
+            entityManager.flush();
+            System.out.println("Movie saved: " + movie1);
+        });
+        // insert same movie again
+        assertThrows(PersistenceException.class, () -> {
+            entityManager.persist(movie2);
+            entityManager.flush();
+            entityManager.getTransaction().commit();
+            System.out.println("Movie saved: " + movie2);
+        });
+        entityManager.getTransaction().rollback();
     }
 
 }
