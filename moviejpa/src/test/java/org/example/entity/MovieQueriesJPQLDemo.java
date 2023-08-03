@@ -3,6 +3,8 @@ package org.example.entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
+import jakarta.persistence.Tuple;
+import org.example.dto.TitleYear;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -11,6 +13,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
 
 /**
  * Doc:
@@ -185,6 +188,109 @@ public class MovieQueriesJPQLDemo {
                 .setParameter("countYear", countYear)
                 .getResultStream()
                 .forEach(System.out::println);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings={
+            "%Star%"
+    })
+    void demoFindTitlesLike(String title){
+        String queryJPQL = """
+                SELECT
+                    m.title
+                FROM
+                    Movie m
+                WHERE
+                    m.title like :title
+                ORDER BY m.title
+                """;
+        var titles = entityManager.createQuery(queryJPQL, String.class)
+                .setParameter("title", title)
+                .getResultList();
+        titles.forEach(System.out::println);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings={
+            "%Star%"
+    })
+    void demoFindTitleYearWithTitleLikeToObjectArray(String titlePattern){
+        String queryJPQL = """
+                SELECT
+                    m.title,
+                    m.year
+                FROM
+                    Movie m
+                WHERE
+                    m.title like :titlePattern
+                ORDER BY m.title
+                """;
+        var resultList = entityManager.createQuery(queryJPQL, Object[].class)
+                .setParameter("titlePattern", titlePattern)
+                .getResultList();
+        resultList.forEach(row -> {
+            System.out.println(Arrays.toString(row));
+            String title = (String) row[0];
+            short year = (short) row[1];
+            System.out.println("\t- title: " + title);
+            System.out.println("\t- year: " + year);
+        });
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings={
+            "%Star%"
+    })
+    void demoFindTitleYearWithTitleLikeToTuple(String titlePattern){
+        String queryJPQL = """
+                SELECT
+                    m.title as title,
+                    m.year as year
+                FROM
+                    Movie m
+                WHERE
+                    m.title like :titlePattern
+                ORDER BY m.title
+                """;
+        var resultList = entityManager.createQuery(queryJPQL, Tuple.class)
+                .setParameter("titlePattern", titlePattern)
+                .getResultList();
+        resultList.forEach(tuple -> {
+            System.out.println(tuple);
+            String title = tuple.get("title", String.class);
+            short year = tuple.get("year", short.class);
+            System.out.println("\t- title: " + title);
+            System.out.println("\t- year: " + year);
+        });
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings={
+            "%Star%"
+    })
+    void demoFindTitleYearWithTitleLikeToDto(String titlePattern){
+        String queryJPQL = """
+                SELECT
+                    new org.example.dto.TitleYear(
+                        m.title,
+                        m.year
+                    )
+                FROM
+                    Movie m
+                WHERE
+                    m.title like :titlePattern
+                ORDER BY m.title
+                """;
+        var titleYearList = entityManager.createQuery(queryJPQL, TitleYear.class)
+                .setParameter("titlePattern", titlePattern)
+                .getResultList();
+        titleYearList.forEach(titleYear -> {
+            System.out.println(titleYear);
+            String title = titleYear.getTitle();
+            short year = titleYear.getYear();
+            System.out.println("\t- title: " + title);
+            System.out.println("\t- year: " + year);
+        });
     }
 
 
