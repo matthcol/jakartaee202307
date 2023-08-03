@@ -6,6 +6,7 @@ import org.example.bootstrap.JpaBootstrap;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 
@@ -195,5 +196,33 @@ class MovieCrudDemo {
         // entityManager.flush();
         entityManager.getTransaction().commit(); // SQL: update movies ... where id = 1
     }
+
+    @Test
+    @Order(9)
+    void demoDelete() {
+        System.out.println();
+        System.out.println("*** Demo Delete Movies (with Hibernate) ***");
+        // load all movies from database
+        entityManager.getTransaction().begin();
+        var movies = entityManager.createQuery("FROM Movie", Movie.class)
+                .getResultList();
+        System.out.println(" - movies from database -");
+        movies.forEach(System.out::println);
+        // delete movies from 2023
+        short year = 2023;
+        System.out.println(MessageFormat.format(" - delete movies of year {0} from database -", year));
+        movies.stream()
+                .filter(movie -> movie.getYear() == year)
+                .peek(System.out::println)
+                .forEach(entityManager::remove);
+        entityManager.getTransaction().commit();
+        // reread from database
+        entityManager.clear();
+        System.out.println(" - movies (read again) from database -");
+        var movies2 = entityManager.createQuery("FROM Movie", Movie.class)
+                .getResultList();
+        movies2.forEach(System.out::println);
+    }
+
 
 }
