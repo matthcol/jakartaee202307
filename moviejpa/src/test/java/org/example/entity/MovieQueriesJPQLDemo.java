@@ -7,6 +7,14 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Doc:
+ * - Hibernate:
+ * https://docs.jboss.org/hibernate/orm/6.2/userguide/html_single/Hibernate_User_Guide.html#hql
+ * https://docs.jboss.org/hibernate/orm/6.2/userguide/html_single/Hibernate_User_Guide.html#query-language
+ * - Jakarta EE JPA:
+ * https://jakarta.ee/specifications/persistence/3.1/jakarta-persistence-spec-3.1#a4665
+ */
 public class MovieQueriesJPQLDemo {
 
     static EntityManagerFactory entityManagerFactory;
