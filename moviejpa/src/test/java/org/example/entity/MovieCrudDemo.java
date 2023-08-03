@@ -104,6 +104,8 @@ class MovieCrudDemo {
     @Test
     @Order(5)
     void testMovieTitleMandatory() {
+        System.out.println();
+        System.out.println("*** Demo Error Save movie without title (with Hibernate) ***");
         var movie = Movie.builder()
                 .year((short) 2023)
                 .build();
@@ -114,6 +116,39 @@ class MovieCrudDemo {
             entityManager.getTransaction().commit();
         });
         entityManager.getTransaction().rollback();
+    }
+
+    @Test
+    @Order(6)
+    void demoTransactionRollback(){
+        System.out.println();
+        System.out.println("*** Demo Rollback Transaction (with Hibernate) ***");
+        var movies = List.of(
+                Movie.builder()
+                        .title("Star Wars IV - A New Hope")
+                        .year((short) 1977)
+                        .build(),
+                Movie.builder()
+                        .title("Star Wars V - The Empire Strikes Back")
+                        .year((short) 1977)
+                        .build(),
+                Movie.builder()
+                        .title("Star Wars VI - Return of The Jedi")
+                        .year((short) 1977)
+                        .build()
+        );
+        entityManager.getTransaction().begin();
+        for (var movie: movies) {
+            entityManager.persist(movie);
+            entityManager.flush();
+            System.out.println(movie);
+        }
+        System.out.println("Rollback");
+        entityManager.getTransaction().rollback(); // .commit()
+        entityManager.clear();
+        var moviesFromDb = entityManager.createQuery("FROM Movie", Movie.class)
+                .getResultList();
+        System.out.println(moviesFromDb);
     }
 
 }
