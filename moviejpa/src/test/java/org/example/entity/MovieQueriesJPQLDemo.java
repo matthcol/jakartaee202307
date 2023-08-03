@@ -89,4 +89,13 @@ public class MovieQueriesJPQLDemo {
                 .forEach(System.out::println);
     }
 
+    // EXo: movies with year between year1 and year2 sorted by year, title
+
+    // Exo: movies with no duration sorted by title
+
+    // Exo: movies from last 10 years sorted by year desc, title asc
+
+
+
+
 }
