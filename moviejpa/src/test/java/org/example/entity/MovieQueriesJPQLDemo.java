@@ -416,4 +416,33 @@ public class MovieQueriesJPQLDemo {
                 });
     }
 
+    @ParameterizedTest
+    @ValueSource(ints={142, 537, 0})
+    void demoFilmographyActor(int actor_id) {
+        String queryJPQL = """
+                SELECT
+                    m
+                FROM
+                    Movie m
+                    JOIN m.actors a
+                    LEFT JOIN FETCH m.director d
+                WHERE
+                    a.id = :actor_id
+                ORDER BY
+                    m.year DESC
+                """;
+        var movies = entityManager.createQuery(queryJPQL, Movie.class)
+                .setParameter("actor_id", actor_id)
+                .getResultList();
+        System.out.println("- Filmography -");
+        movies.forEach(movie -> {
+            System.out.print(movie);
+            System.out.println(" ; director = " + movie.getDirector());
+        });
+    }
+
+    // Exo: stats by director: id, name, countMovie, total duration, first year, last year ; keep only director with at least 10 movies
+
+    // Exo: stats by actor: id, name, countMovie, total duration, first year, last year ; keep only actor with at least 10 movies
+
 }
