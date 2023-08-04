@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import jakarta.persistence.Tuple;
+import org.example.dto.StatisticsByYear;
 import org.example.dto.TitleYear;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -319,6 +320,34 @@ public class MovieQueriesJPQLDemo {
                 )));
     }
 
-
+    @ParameterizedTest
+    @CsvSource({    // with method source, generate all decades
+            "1950,1959",
+            "1980,1989"
+    })
+    void demoStatsByYear(short year1, short year2){
+        String queryJPQL = """
+                SELECT
+                    new org.example.dto.StatisticsByYear(
+                        m.year,
+                        COUNT(m),
+                        COALESCE(SUM(m.duration), 0),
+                        AVG(m.duration)
+                    )
+                FROM
+                    Movie m
+                WHERE
+                    m.year BETWEEN :year1 and :year2
+                GROUP BY
+                    m.year
+                ORDER BY
+                    m.year
+                """;
+        entityManager.createQuery(queryJPQL, StatisticsByYear.class)
+                .setParameter("year1", year1)
+                .setParameter("year2", year2)
+                .getResultStream()
+                .forEach(System.out::println);
+    }
 
 }
