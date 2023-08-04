@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.example.enums.Pg;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
@@ -49,9 +51,17 @@ public class Movie {
     @Column(length=4000)
     private String synopsis;
 
-    @Transient // non persistent field, useful: bug, update
+    // @Transient // non persistent field, useful: bug, update
+    @ManyToOne
+    @JoinColumn(name="director_id") // nullable = True (default)
     private Person director;
 
-    @Transient
-    private List<Person> actors;
+    @ManyToMany
+    @JoinTable(
+            name="play",
+            joinColumns = @JoinColumn(name="movie_id"),
+            inverseJoinColumns = @JoinColumn(name="actor_id")
+    )
+    @Builder.Default
+    private Set<Person> actors = new HashSet<>();
 }

@@ -7,6 +7,7 @@ import jakarta.persistence.Tuple;
 import org.example.dto.StatisticsByYear;
 import org.example.dto.TitleYear;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,6 +16,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * Doc:
@@ -43,6 +45,7 @@ public class MovieQueriesJPQLDemo {
 
     @Test
     void demoFindAll(){
+        // NB: N directors are fetched (expensive cost)
         String queryJPQL = "SELECT m FROM Movie m";
         var movies = entityManager.createQuery(queryJPQL, Movie.class)
                 .getResultList(); // execute SQL and store results in a List<Movie>
@@ -56,6 +59,25 @@ public class MovieQueriesJPQLDemo {
                     System.out.println("\t- year = " + movie.getYear());
                 });
     }
+
+    @Test
+    void demoFindAllWithDirector(){
+        // NB: N directors are fetched (expensive cost)
+        String queryJPQL = "SELECT m FROM Movie m LEFT JOIN FETCH m.director";
+        var movies = entityManager.createQuery(queryJPQL, Movie.class)
+                .getResultList(); // execute SQL and store results in a List<Movie>
+        System.out.println("Movie count: " + movies.size());
+        movies.stream()
+                .skip(200)
+                .limit(10)
+                .peek(System.out::println)
+                .forEach(movie -> {
+                    System.out.println("\t- title = " + movie.getTitle());
+                    System.out.println("\t- year = " + movie.getYear());
+                    System.out.println("\t- director = " + movie.getDirector());
+                });
+    }
+
 
     @Test
     void demoFindAllByYear(){
@@ -348,6 +370,50 @@ public class MovieQueriesJPQLDemo {
                 .setParameter("year2", year2)
                 .getResultStream()
                 .forEach(System.out::println);
+    }
+
+    @Test
+    void demoMovieWithActorsAndDirector() {
+        int idMovie = 60196;
+        var optMovie = Optional.ofNullable(entityManager.find(Movie.class, idMovie));
+        Assertions.assertTrue(optMovie.isPresent());
+        var movie = optMovie.get();
+        System.out.println(movie);
+        System.out.println(" - Director: " + movie.getDirector());
+        System.out.println(" - Actors:");
+        movie.getActors().forEach(System.out::println);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints={142, 1466, 0})
+    void demoFilmographyDirector(int director_id) {
+        String queryJPQL = """
+                SELECT
+                    m
+                FROM
+                    Movie m
+                    JOIN FETCH m.director d
+                WHERE
+                    d.id = :director_id
+                ORDER BY
+                    m.year DESC
+                """;
+        var movies = entityManager.createQuery(queryJPQL, Movie.class)
+                .setParameter("director_id", director_id)
+                .getResultList();
+        System.out.println("- Filmography -");
+        movies.forEach(movie -> {
+            System.out.print(movie);
+            System.out.println(" ; director = " + movie.getDirector());
+        });
+        movies.stream()
+                .findFirst()
+                .ifPresent(movie -> {
+                    System.out.println(MessageFormat.format("- Casting movie: {0} -",
+                            movie.getTitle()));
+                    movie.getActors()
+                            .forEach(System.out::println);
+                });
     }
 
 }

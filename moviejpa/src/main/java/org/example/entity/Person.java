@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 // lombok
 @NoArgsConstructor
@@ -25,4 +26,8 @@ public class Person {
 
     // if type is java.util.Date or Calendar => @Temporal
     private LocalDate birthdate;
+
+    // NB: for bidirectional association
+    //    private Set<Movie> directedMovies;
+    //    private Set<Movie> playedMovies;
 }
