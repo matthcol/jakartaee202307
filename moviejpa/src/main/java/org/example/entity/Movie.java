@@ -2,6 +2,7 @@ package org.example.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.enums.Pg;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Builder    // test
 @Getter // needed by JPA
 @Setter // needed by JPA
-@ToString // test + log
+@ToString(of = {"id", "title", "year"}) // test + log
 // JPA
 @Entity // this class is persistent, by default table name = class name
 @Table(
@@ -37,6 +38,16 @@ public class Movie {
     private short year;
 
     private Short duration; // nullable = true
+
+    @Enumerated(EnumType.STRING) // default: ORDINAL
+    @Column(length = 5)
+    private Pg pg;
+
+    @Column(name="poster_uri", length=300)
+    private String posterUri;
+
+    @Column(length=4000)
+    private String synopsis;
 
     @Transient // non persistent field, useful: bug, update
     private Person director;
